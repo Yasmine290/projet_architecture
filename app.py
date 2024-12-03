@@ -2,9 +2,13 @@ from flask import Flask, jsonify
 from pymongo import MongoClient
 from flask_cors import CORS
 from config import Config
+from logic.controllers.bookingController import BookingController
 from logic.controllers.userController import UserController
-from logic.dependancy import provide_user_repository
 from dotenv import load_dotenv
+
+from logic.dependancy import provide_repositories
+from logic.repositories.bookingRepository import BookingRepository
+from logic.services.hotel_service import HotelService
 
 
 # Créer une instance Flask
@@ -15,11 +19,19 @@ load_dotenv()
 CORS(app)
 
 # Injection de dépendances
-user_repository = provide_user_repository()
+[user_repository, booking_repository] = provide_repositories()
 user_controller = UserController(user_repository)
+booking_controller = BookingController(booking_repository)
+
+hotel_Service = HotelService()
 
 # Enregistrement des routes
 user_controller.register_routes(app)
+hotel_Service.register_routes(app)
+
+
+# Enregistrer les routes du contrôleur
+booking_controller.register_routes(app)
 
 def test_mongo_connection():
     import os
